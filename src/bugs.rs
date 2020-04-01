@@ -10,6 +10,7 @@ use crate::common::*;
 #[derive(Debug, Serialize)]
 pub struct Bug {
     id: usize,
+    image_url: Option<String>,
     #[serde(rename="name")]
     names: BTreeMap<String, String>,
     price: i32,
@@ -36,8 +37,8 @@ fn parse_bugs(page: Document) -> Fallible<Vec<Bug>> {
         .nth(4)
         .ok_or_else(|| format_err!("Could not find south table"))?;
 
-    let north_rows = north_table.find(Name("tr")).skip(1);
-    let south_rows = south_table.find(Name("tr")).skip(1);
+    let north_rows = north_table.find(Name("tr")).skip(3);
+    let south_rows = south_table.find(Name("tr")).skip(3);
 
     let mut bugs = Vec::new();
 
@@ -53,8 +54,14 @@ fn parse_bugs(page: Document) -> Fallible<Vec<Bug>> {
 
         names.insert("eng".into(), english_name);
         names.insert("deu".into(), "TBD".into());
-        
-        // let _img = col[1].next();
+
+        let image_url = north_cols.get(1)
+            .and_then(|img| img
+                .find(Name("img"))
+                .next()
+                .and_then(|img| img.attr("data-src"))
+                .map(<_>::into)
+            );
 
         let price = north_cols.get(2)
             .and_then(|price| parse_price(price.text()))
@@ -88,6 +95,7 @@ fn parse_bugs(page: Document) -> Fallible<Vec<Bug>> {
 
         let bug = Bug {
             id,
+            image_url,
             names,
             price,
             location,
