@@ -88,3 +88,13 @@ fn parse_table(table: Node, skip_rows: usize) -> Fallible<Vec<Fossil>> {
 
     Ok(fossils)
 }
+
+impl HasImage for Fossil {
+    fn image_file_name(&self) -> String {
+        format!("fo{}.png", self.id)
+    }
+
+    fn image_url(&self) -> Option<String> {
+        self.image_url.clone()
+    }
+}

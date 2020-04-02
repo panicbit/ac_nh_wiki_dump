@@ -89,15 +89,18 @@ pub fn download_page(url: &str) -> Fallible<Document> {
     Ok(page)
 }
 
-type Url = String;
-
-pub fn download_files(dir: impl AsRef<Path>, items: impl Iterator<Item = (Url, String)>) -> Fallible<()> {
+pub fn download_images<T: HasImage>(items: impl IntoIterator<Item = T>, dir: impl AsRef<Path>) -> Fallible<()> {
     let dir = dir.as_ref();
 
     fs::create_dir_all(dir)?;
 
-    for (url, file_name) in items {
-        let path = dir.join(file_name);
+    for item in items {
+        let url = match item.image_url() {
+            Some(url) => url,
+            None => continue,
+        };
+
+        let path = dir.join(item.image_file_name());
 
         println!("Downloading '{}' to '{}'", url, path.display());
 
@@ -115,4 +118,18 @@ pub fn tweak_image_url(url: impl AsRef<str>) -> String {
     let url = re.replace_all(url, "");
 
     url.into_owned()
+}
+
+pub trait HasImage {
+    fn image_file_name(&self) -> String;
+    fn image_url(&self) -> Option<String>;
+}
+
+impl<T: HasImage> HasImage for &'_ T {
+    fn image_file_name(&self) -> String {
+        (*self).image_file_name()
+    }
+    fn image_url(&self) -> Option<String> {
+        (*self).image_url()
+    }
 }

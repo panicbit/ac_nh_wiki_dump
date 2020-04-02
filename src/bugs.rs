@@ -109,3 +109,13 @@ fn parse_bugs(page: Document) -> Fallible<Vec<Bug>> {
 
     Ok(bugs)
 }
+
+impl HasImage for Bug {
+    fn image_file_name(&self) -> String {
+        format!("i{}.png", self.id)
+    }
+
+    fn image_url(&self) -> Option<String> {
+        self.image_url.clone()
+    }
+}
