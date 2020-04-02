@@ -7,12 +7,13 @@ use itertools::Itertools;
 use crate::common::*;
 
 #[derive(Debug, Serialize)]
-pub struct Bug {
+pub struct Fish {
     id: usize,
     #[serde(rename="name")]
     names: BTreeMap<String, String>,
     price: i32,
     location: String,
+    shadow: Shadow,
     time: Vec<[u8; 2]>,
     #[serde(rename="months_north")]
     north_months: Vec<bool>,
@@ -21,13 +22,20 @@ pub struct Bug {
     image_url: Option<String>,
 }
 
-pub fn fetch_all() -> Fallible<Vec<Bug>> {
-    let page = download_page("https://animalcrossing.fandom.com/wiki/Bugs_(New_Horizons)")?;
-    let bugs = parse_bugs(page)?;
-    Ok(bugs)
+#[derive(Debug, Serialize)]
+pub struct Shadow {
+    size: i8,
+    is_narrow: bool,
+    has_fin: bool,
 }
 
-fn parse_bugs(page: Document) -> Fallible<Vec<Bug>> {
+pub fn fetch_all() -> Fallible<Vec<Fish>> {
+    let page = download_page("https://animalcrossing.fandom.com/wiki/Fish_(New_Horizons)")?;
+    let fishs = parse_fish(page)?;
+    Ok(fishs)
+}
+
+fn parse_fish(page: Document) -> Fallible<Vec<Fish>> {
     let north_table = page.find(Name("table"))
         .nth(2)
         .ok_or_else(|| format_err!("Could not find north table"))?;
@@ -36,10 +44,10 @@ fn parse_bugs(page: Document) -> Fallible<Vec<Bug>> {
         .nth(4)
         .ok_or_else(|| format_err!("Could not find south table"))?;
 
-    let north_rows = north_table.find(Name("tr")).skip(3);
-    let south_rows = south_table.find(Name("tr")).skip(3);
+    let north_rows = north_table.find(Name("tr")).skip(1);
+    let south_rows = south_table.find(Name("tr")).skip(1);
 
-    let mut bugs = Vec::new();
+    let mut fishs = Vec::new();
 
     for (id, (north_row, south_row)) in north_rows.zip(south_rows).enumerate() {
         let north_cols = north_row.find(Name("td")).collect_vec();
@@ -71,11 +79,19 @@ fn parse_bugs(page: Document) -> Fallible<Vec<Bug>> {
             .and_then(|location| parse_text(location.text()))
             .unwrap_or_else(|| "???".into());
         
-        let time = north_cols.get(4)
+        let shadow = north_cols.get(4)
+            .map(|shadow| parse_shadow(shadow.text()))
+            .unwrap_or(Shadow {
+                size: -1,
+                is_narrow: false,
+                has_fin: false,
+            });
+
+        let time = north_cols.get(5)
             .and_then(|time| parse_time_slots(time.text()))
             .unwrap_or_else(Vec::new);
 
-        let mut north_months = north_cols.get(5..)
+        let mut north_months = north_cols.get(6..)
             .unwrap_or(&[])
             .iter()
             .take(12)
@@ -84,7 +100,7 @@ fn parse_bugs(page: Document) -> Fallible<Vec<Bug>> {
             .collect::<Vec<bool>>();
         north_months.resize(12, false);
 
-        let mut south_months = south_cols.get(5..)
+        let mut south_months = south_cols.get(6..)
             .unwrap_or(&[])
             .iter()
             .take(12)
@@ -93,19 +109,34 @@ fn parse_bugs(page: Document) -> Fallible<Vec<Bug>> {
             .collect::<Vec<bool>>();
         south_months.resize(12, false);
 
-        let bug = Bug {
+        let fish = Fish {
             id,
             image_url,
             names,
             price,
             location,
+            shadow,
             north_months,
             south_months,
             time,
         };
 
-        bugs.push(bug);
+        fishs.push(fish);
     }
 
-    Ok(bugs)
+    Ok(fishs)
+}
+
+fn parse_shadow(shadow: impl AsRef<str>) -> Shadow {
+    let shadow = shadow.as_ref().to_lowercase();
+    let is_narrow = shadow.contains("narrow");
+    let has_fin = shadow.contains("fin");
+    let size = shadow
+        .chars()
+        .filter(char::is_ascii_digit)
+        .collect::<String>()
+        .parse::<i8>()
+        .unwrap_or(-1);
+
+    Shadow { size, is_narrow, has_fin }
 }

@@ -1,3 +1,9 @@
+use select::document::Document;
+use failure::Fallible;
+use std::path::Path;
+use std::fs;
+use ::reqwest::blocking as reqwest;
+use regex::Regex;
 
 pub fn parse_text(name: impl AsRef<str>) -> Option<String> {
     let name = name
@@ -70,4 +76,43 @@ fn parse_am_pm_time(time: &str) -> Option<u8> {
         "11 PM" => 23,
         _ => return None,
     })
+}
+
+pub fn download_page(url: &str) -> Fallible<Document> {
+    let page = reqwest::get(url)
+        .unwrap()
+        .text()
+        .unwrap();
+
+    let page = Document::from(&*page);
+
+    Ok(page)
+}
+
+type Url = String;
+
+pub fn download_files(dir: impl AsRef<Path>, items: impl Iterator<Item = (Url, String)>) -> Fallible<()> {
+    let dir = dir.as_ref();
+
+    fs::create_dir_all(dir)?;
+
+    for (url, file_name) in items {
+        let path = dir.join(file_name);
+
+        println!("Downloading '{}' to '{}'", url, path.display());
+
+        let bytes = reqwest::get(&url)?.bytes()?;
+
+        fs::write(path, bytes)?;
+    }
+
+    Ok(())
+}
+
+pub fn tweak_image_url(url: impl AsRef<str>) -> String {
+    let url = url.as_ref();
+    let re = Regex::new(r"/scale-to-width-down/\d+").unwrap();
+    let url = re.replace_all(url, "");
+
+    url.into_owned()
 }
