@@ -141,12 +141,15 @@ fn parse_shadow(shadow: impl AsRef<str>) -> Shadow {
     Shadow { size, is_narrow, has_fin }
 }
 
-impl HasImage for Fish {
-    fn image_file_name(&self) -> String {
-        format!("f{}.png", self.id)
-    }
-
-    fn image_url(&self) -> Option<String> {
-        self.image_url.clone()
+impl HasFiles for Fish {
+    fn files(&self) -> Vec<File> {
+        self
+            .image_url
+            .as_ref()
+            .map(|image_url| vec![File {
+                name: format!("f{}.png", self.id),
+                url: image_url.clone(),
+            }])
+            .unwrap_or_default()
     }
 }

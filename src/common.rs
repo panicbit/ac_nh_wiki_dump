@@ -89,24 +89,21 @@ pub fn download_page(url: &str) -> Fallible<Document> {
     Ok(page)
 }
 
-pub fn download_images<T: HasImage>(items: impl IntoIterator<Item = T>, dir: impl AsRef<Path>) -> Fallible<()> {
+pub fn download_images<T: HasFiles>(items: impl IntoIterator<Item = T>, dir: impl AsRef<Path>) -> Fallible<()> {
     let dir = dir.as_ref();
 
     fs::create_dir_all(dir)?;
 
     for item in items {
-        let url = match item.image_url() {
-            Some(url) => url,
-            None => continue,
-        };
+        for file in item.files() {
+            let path = dir.join(file.name);
 
-        let path = dir.join(item.image_file_name());
+            println!("Downloading '{}' to '{}'", file.url, path.display());
 
-        println!("Downloading '{}' to '{}'", url, path.display());
+            let bytes = reqwest::get(&file.url)?.bytes()?;
 
-        let bytes = reqwest::get(&url)?.bytes()?;
-
-        fs::write(path, bytes)?;
+            fs::write(path, bytes)?;
+        }
     }
 
     Ok(())
@@ -114,22 +111,23 @@ pub fn download_images<T: HasImage>(items: impl IntoIterator<Item = T>, dir: imp
 
 pub fn tweak_image_url(url: impl AsRef<str>) -> String {
     let url = url.as_ref();
-    let re = Regex::new(r"/scale-to-width-down/\d+").unwrap();
+    let re = Regex::new(r"(/scale-to-width-down/\d+)|(w=\d+)").unwrap();
     let url = re.replace_all(url, "");
 
     url.into_owned()
 }
 
-pub trait HasImage {
-    fn image_file_name(&self) -> String;
-    fn image_url(&self) -> Option<String>;
+pub trait HasFiles {
+    fn files(&self) -> Vec<File>;
 }
 
-impl<T: HasImage> HasImage for &'_ T {
-    fn image_file_name(&self) -> String {
-        (*self).image_file_name()
-    }
-    fn image_url(&self) -> Option<String> {
-        (*self).image_url()
+pub struct File {
+    pub name: String,
+    pub url: String,
+}
+
+impl<T: HasFiles> HasFiles for &'_ T {
+    fn files(&self) -> Vec<File> {
+        (*self).files()
     }
 }
