@@ -29,7 +29,7 @@ pub fn fetch_all() -> Fallible<Vec<Bug>> {
 
     for bug in &mut bugs {
         let name = bug.names["eng"].to_lowercase();
-        
+
         if let Some(extra_info) = extra_info.get(&name) {
             bug.names.insert("deu".into(), extra_info.german_name.clone());
             bug.hi_res_image_url = extra_info.hi_res_image_url.clone();

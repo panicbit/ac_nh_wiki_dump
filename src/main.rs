@@ -1,4 +1,3 @@
-use failure::Fallible;
 use serde_json as json;
 use common::*;
 
