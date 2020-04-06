@@ -132,6 +132,7 @@ impl HasFiles for Bug {
             files.push(File {
                 name: format!("i{}.png", self.id),
                 url: image_url.clone(),
+                transform: convert_image_to_png,
             })
         }
 
@@ -139,6 +140,7 @@ impl HasFiles for Bug {
             files.push(File {
                 name: format!("i{}_hi.png", self.id),
                 url: hi_res_image_url.clone(),
+                transform: convert_image_to_png,
             })
         }
 

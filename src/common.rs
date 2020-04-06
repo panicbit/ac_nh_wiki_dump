@@ -4,6 +4,7 @@ use std::path::Path;
 use std::fs;
 use ::reqwest::blocking as reqwest;
 use regex::Regex;
+use image::ImageFormat;
 
 pub fn parse_text(name: impl AsRef<str>) -> Option<String> {
     let name = name
@@ -124,10 +125,20 @@ pub trait HasFiles {
 pub struct File {
     pub name: String,
     pub url: String,
+    pub transform: fn(Vec<u8>) -> Vec<u8>,
 }
 
 impl<T: HasFiles> HasFiles for &'_ T {
     fn files(&self) -> Vec<File> {
         (*self).files()
     }
+}
+
+pub fn convert_image_to_png(source: Vec<u8>) -> Vec<u8> {
+    let source = image::load_from_memory(&source).unwrap();
+    let mut target = Vec::new();
+
+    source.write_to(&mut target, ImageFormat::Png).unwrap();
+
+    target
 }

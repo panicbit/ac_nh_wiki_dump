@@ -162,6 +162,7 @@ impl HasFiles for Fish {
             files.push(File {
                 name: format!("f{}.png", self.id),
                 url: image_url.clone(),
+                transform: convert_image_to_png,
             })
         }
 
@@ -169,6 +170,7 @@ impl HasFiles for Fish {
             files.push(File {
                 name: format!("f{}_hi.png", self.id),
                 url: hi_res_image_url.clone(),
+                transform: convert_image_to_png,
             })
         }
 

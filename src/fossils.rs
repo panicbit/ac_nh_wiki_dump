@@ -97,6 +97,7 @@ impl HasFiles for Fossil {
             .map(|image_url| vec![File {
                 name: format!("fo{}.png", self.id),
                 url: image_url.clone(),
+                transform: convert_image_to_png,
             }])
             .unwrap_or_default()
     }
