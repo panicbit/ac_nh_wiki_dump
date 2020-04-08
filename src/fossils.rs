@@ -3,6 +3,7 @@ use select::{node::Node, predicate::*};
 use serde::*;
 use failure::{Fallible};
 use itertools::Itertools;
+use failure::format_err;
 use crate::common::*;
 
 #[derive(Debug, Serialize)]
@@ -12,6 +13,7 @@ pub struct Fossil {
     pub names: BTreeMap<String, String>,
     pub image_url: Option<String>,
     pub price: i32,
+    pub hi_res_image_url: Option<String>,
 }
 
 pub fn fetch_all() -> Fallible<Vec<Fossil>> {
@@ -31,7 +33,7 @@ pub fn fetch_all() -> Fallible<Vec<Fossil>> {
         parse_table(table, 4)?
     };
 
-    let fossils = standalone_fossils.into_iter()
+    let mut fossils = standalone_fossils.into_iter()
         .chain(multipart_fossils)
         .enumerate()
         .map(|(id, mut fossil)| {
@@ -39,6 +41,17 @@ pub fn fetch_all() -> Fallible<Vec<Fossil>> {
             fossil
         })
         .collect_vec();
+
+    let extra_info = fetch_extra_info()?;
+
+    for fossil in &mut fossils {
+        let name = fossil.names["eng"].to_lowercase();
+
+        if let Some(extra_info) = extra_info.get(&name) {
+            fossil.names.insert("deu".into(), extra_info.german_name.clone());
+            fossil.hi_res_image_url = extra_info.hi_res_image_url.clone();
+        }
+    }
 
     Ok(fossils)
 }
@@ -85,6 +98,7 @@ fn parse_table(table: Node, skip_rows: usize) -> Fallible<Vec<Fossil>> {
             image_url,
             names,
             price,
+            hi_res_image_url: None,
         };
 
         fossils.push(fossil);
@@ -105,4 +119,82 @@ impl HasFiles for Fossil {
             }])
             .unwrap_or_default()
     }
+}
+
+#[derive(Debug)]
+struct ExtraInfo {
+    // english_name: String,
+    german_name: String,
+    hi_res_image_url: Option<String>,
+}
+
+fn fetch_extra_info() -> Fallible<BTreeMap<String, ExtraInfo>> {
+    let page = download_page("https://animalcrossingwiki.de/acnh/katalog/fossilien")?;
+    
+    let table = page.find(Name("table"))
+        .nth(1)
+        .ok_or_else(|| format_err!("Could not find bug hi-res table"))?;
+
+    let rows = table.find(Name("tr")).skip(1);
+
+    let mut extra_infos = BTreeMap::new();
+
+    for row in rows {
+        if row.find(Name("th")).count() > 0 {
+            continue;
+        }
+
+        let cols = row.find(Name("td")).collect_vec();
+
+        let img = cols.get(0)
+            .and_then(|img| img.find(Name("img")).next())
+            .and_then(|img| img.attr("src"))
+            .map(tweak_image_url);
+        let img = match img {
+            Some(img) if img.contains("bildfehlt") => None,
+            Some(img) if img.starts_with('/') => Some(format!("https://animalcrossingwiki.de{}", img)),
+            Some(img) => Some(img),
+            None => continue,
+        };
+
+        let names = cols.get(1)
+            .map(|name| name
+                .text()
+                .split('\n')
+                .map(|name| name.trim().to_owned())
+                .collect_vec()
+            );
+        let (german_name, english_name);
+
+        match names {
+            Some(names) if names.len() == 2 => {
+                german_name = names[0].clone();
+                english_name = names[1].clone();
+            },
+            _ => continue,
+        }
+
+        let key = english_name.to_lowercase();
+
+        let key = match &*key {
+            "archaeopterix" => "archaeopteryx".into(),
+            "australopithecus" => "australopith".into(),
+            "shark tooth" => "shark-tooth pattern".into(),
+            "archelon torso" => "archelon tail".into(),
+            "pachy skull" => "pachysaurus skull".into(),
+            "pachy tail" => "pachysaurus tail".into(),
+            "sabertooth torso" => "sabertooth tail".into(),
+            "t. rex-torso" => "t. rex torso".into(),
+            _ => key,
+        };
+        let extra_info = ExtraInfo {
+            // english_name,
+            german_name,
+            hi_res_image_url: img,
+        };
+ 
+        extra_infos.insert(key, extra_info);
+    }
+
+    Ok(extra_infos)
 }
