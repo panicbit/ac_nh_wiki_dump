@@ -8,19 +8,19 @@ use crate::common::*;
 
 #[derive(Debug, Serialize)]
 pub struct Fish {
-    id: usize,
+    pub id: usize,
     #[serde(rename="name")]
-    names: BTreeMap<String, String>,
-    price: i32,
-    location: String,
-    shadow: Shadow,
-    time: Vec<[u8; 2]>,
+    pub names: BTreeMap<String, String>,
+    pub price: i32,
+    pub location: String,
+    pub shadow: Shadow,
+    pub time: Vec<[u8; 2]>,
     #[serde(rename="months_north")]
-    north_months: Vec<bool>,
+    pub north_months: Vec<bool>,
     #[serde(rename="months_south")]
-    south_months: Vec<bool>,
-    image_url: Option<String>,
-    hi_res_image_url: Option<String>,
+    pub south_months: Vec<bool>,
+    pub image_url: Option<String>,
+    pub hi_res_image_url: Option<String>,
 }
 
 #[derive(Debug, Serialize)]

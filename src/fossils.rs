@@ -49,6 +49,10 @@ fn parse_table(table: Node, skip_rows: usize) -> Fallible<Vec<Fossil>> {
     let mut fossils = Vec::new();
 
     for (id, row) in rows.enumerate() {
+        if row.find(Name("th")).count() > 0 {
+            continue;
+        }
+
         let cols = row.find(Name("td")).collect_vec();
 
         let mut names = BTreeMap::new();

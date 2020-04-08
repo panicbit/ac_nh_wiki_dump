@@ -6,6 +6,7 @@ mod bugs;
 mod fossils;
 mod fish;
 mod common;
+// mod indices;
 
 const IMAGE_DL_FOLDER: &str = "images";
 
