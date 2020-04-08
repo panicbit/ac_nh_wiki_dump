@@ -5,6 +5,7 @@ use serde::*;
 use failure::{Fallible, format_err};
 use itertools::Itertools;
 use crate::common::*;
+use crate::id;
 
 #[derive(Debug, Serialize)]
 pub struct Bug {
@@ -54,7 +55,7 @@ fn parse_bugs(page: Document) -> Fallible<Vec<Bug>> {
 
     let mut bugs = Vec::new();
 
-    for (id, (north_row, south_row)) in north_rows.zip(south_rows).enumerate() {
+    for (north_row, south_row) in north_rows.zip(south_rows) {
         let north_cols = north_row.find(Name("td")).collect_vec();
         let south_cols = south_row.find(Name("td")).collect_vec();
 
@@ -107,7 +108,7 @@ fn parse_bugs(page: Document) -> Fallible<Vec<Bug>> {
         south_months.resize(12, false);
 
         let bug = Bug {
-            id,
+            id: id::bug(&names["eng"]),
             image_url,
             names,
             price,

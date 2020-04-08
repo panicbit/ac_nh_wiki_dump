@@ -6,12 +6,13 @@ mod bugs;
 mod fossils;
 mod fish;
 mod common;
-// mod indices;
+mod id;
 
 const IMAGE_DL_FOLDER: &str = "images";
+const DATA_FOLDER: &str = "data";
 
 fn main() {
-    fs::create_dir_all("data").unwrap();
+    fs::create_dir_all(DATA_FOLDER).unwrap();
 
     // ### Bugs ###
     let bugs = bugs::fetch_all().expect("bugs");

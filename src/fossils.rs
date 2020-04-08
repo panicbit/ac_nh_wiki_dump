@@ -5,6 +5,7 @@ use failure::{Fallible};
 use itertools::Itertools;
 use failure::format_err;
 use crate::common::*;
+use crate::id;
 
 #[derive(Debug, Serialize)]
 pub struct Fossil {
@@ -61,7 +62,7 @@ fn parse_table(table: Node, skip_rows: usize) -> Fallible<Vec<Fossil>> {
 
     let mut fossils = Vec::new();
 
-    for (id, row) in rows.enumerate() {
+    for row in rows {
         if row.find(Name("th")).count() > 0 {
             continue;
         }
@@ -94,7 +95,7 @@ fn parse_table(table: Node, skip_rows: usize) -> Fallible<Vec<Fossil>> {
             .unwrap_or(-1);
 
         let fossil = Fossil {
-            id,
+            id: id::fossil(&names["eng"]),
             image_url,
             names,
             price,
