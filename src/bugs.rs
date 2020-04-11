@@ -19,7 +19,9 @@ pub struct Bug {
     pub north_months: Vec<bool>,
     #[serde(rename="months_south")]
     pub south_months: Vec<bool>,
+    #[serde(skip)]
     pub image_url: Option<String>,
+    #[serde(skip)]
     pub hi_res_image_url: Option<String>,
 }
 

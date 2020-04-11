@@ -12,8 +12,10 @@ pub struct Fossil {
     pub id: usize,
     #[serde(rename="name")]
     pub names: BTreeMap<String, String>,
-    pub image_url: Option<String>,
     pub price: i32,
+    #[serde(skip)]
+    pub image_url: Option<String>,
+    #[serde(skip)]
     pub hi_res_image_url: Option<String>,
 }
 
