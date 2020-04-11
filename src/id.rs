@@ -26,6 +26,16 @@ pub fn fossil(name: impl AsRef<str>) -> usize {
     }
 }
 
+pub fn flower(name: impl AsRef<str>) -> usize {
+    let name = name.as_ref().to_lowercase();
+
+    match FLOWERS.iter().position(|&other| other == name) {
+        Some(index) => index,
+        _ => panic!("flower '{}' has no id yet", name),
+    }
+}
+
+
 const BUGS: &[&str] = &[
     "common butterfly",
     "yellow butterfly",
@@ -266,4 +276,61 @@ const FOSSILS: &[&str] = &[
     "t. rex skull",
     "t. rex torso",
     "t. rex tail",
+];
+
+
+const FLOWERS: &[&str] = &[
+    "red cosmos",
+    "white cosmos",
+    "yellow cosmos",
+    "pink cosmos",
+    "orange cosmos",
+    "black cosmos",
+    "white tulips",
+    "red tulips",
+    "yellow tulips",
+    "pink tulips",
+    "orange tulips",
+    "purple tulips",
+    "black tulips",
+    "yellow pansies",
+    "red pansies",
+    "white pansies",
+    "orange pansies",
+    "purple pansies",
+    "blue pansies",
+    "white roses",
+    "red roses",
+    "yellow roses",
+    "pink roses",
+    "orange roses",
+    "purple roses",
+    "black roses",
+    "blue roses",
+    "gold roses",
+    "white lilies",
+    "red lilies",
+    "yellow lilies",
+    "pink lilies",
+    "orange lilies",
+    "black lilies",
+    "white windflowers",
+    "orange windflowers",
+    "red windflowers",
+    "blue windflowers",
+    "pink windflowers",
+    "purple windflowers",
+    "white hyacinths",
+    "yellow hyacinths",
+    "red hyacinths",
+    "pink hyacinths",
+    "orange hyacinths",
+    "blue hyacinths",
+    "purple hyacinths",
+    "white mums",
+    "yellow mums",
+    "red mums",
+    "purple mums",
+    "pink mums",
+    "green mums",
 ];

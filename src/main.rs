@@ -1,3 +1,4 @@
+#[macro_use] extern crate maplit;
 use serde_json as json;
 use common::*;
 use std::fs;
@@ -5,6 +6,7 @@ use std::fs;
 mod bugs;
 mod fossils;
 mod fish;
+mod flowers;
 mod common;
 mod id;
 
@@ -14,20 +16,25 @@ const DATA_FOLDER: &str = "data";
 fn main() {
     fs::create_dir_all(DATA_FOLDER).unwrap();
 
-    // ### Bugs ###
-    let bugs = bugs::fetch_all().expect("bugs");
-    let json_bugs = json::to_string_pretty(&bugs).unwrap();
-    fs::write("data/insects.json", json_bugs).unwrap();
+    // // ### Bugs ###
+    // let bugs = bugs::fetch_all().expect("bugs");
+    // let json_bugs = json::to_string_pretty(&bugs).unwrap();
+    // fs::write("data/insects.json", json_bugs).unwrap();
 
-    // ### Fish ###
-    let fishes = fish::fetch_all().expect("fish");
-    let json_fishes = json::to_string_pretty(&fishes).unwrap();
-    fs::write("data/fish.json", json_fishes).unwrap();
+    // // ### Fish ###
+    // let fishes = fish::fetch_all().expect("fish");
+    // let json_fishes = json::to_string_pretty(&fishes).unwrap();
+    // fs::write("data/fish.json", json_fishes).unwrap();
 
-    // ### Fossils ###
-    let fossils = fossils::fetch_all().expect("fossils");
-    let json_fossils = json::to_string_pretty(&fossils).unwrap();
-    fs::write("data/fossils.json", json_fossils).unwrap();
+    // // ### Fossils ###
+    // let fossils = fossils::fetch_all().expect("fossils");
+    // let json_fossils = json::to_string_pretty(&fossils).unwrap();
+    // fs::write("data/fossils.json", json_fossils).unwrap();
+
+    // ### Flowers ###
+    let flowers = flowers::fetch_all().expect("flowers");
+    let json_flowers = json::to_string_pretty(&flowers).unwrap();
+    fs::write("data/flowers.json", json_flowers).unwrap();
 
     // let old_fish_json = include_bytes!("../../../Downloads/ac_res/res/raw/fish.json");
     // let mut old_fishes: Vec<json::Value> = json::from_slice(old_fish_json).unwrap();
@@ -46,4 +53,5 @@ fn main() {
     // download_images(bugs, IMAGE_DL_FOLDER).unwrap();
     // download_images(fish, IMAGE_DL_FOLDER).unwrap();
     // download_images(fossils, IMAGE_DL_FOLDER).unwrap();
+    // download_images(flowers, IMAGE_DL_FOLDER).unwrap();
 }
