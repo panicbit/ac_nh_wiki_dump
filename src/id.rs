@@ -35,6 +35,14 @@ pub fn flower(name: impl AsRef<str>) -> usize {
     }
 }
 
+pub fn art(name: impl AsRef<str>) -> usize {
+    let name = name.as_ref().to_lowercase();
+
+    match ART.iter().position(|&other| other == name) {
+        Some(index) => index,
+        _ => panic!("art '{}' has no id yet", name),
+    }
+}
 
 const BUGS: &[&str] = &[
     "common butterfly",
@@ -333,4 +341,50 @@ const FLOWERS: &[&str] = &[
     "purple mums",
     "pink mums",
     "green mums",
+];
+
+const ART: &[&str] = &[
+    "robust statue",
+    "rock-head statue",
+    "beautiful statue",
+    "valiant statue",
+    "gallant statue",
+    "mystic statue",
+    "informative statue",
+    "warrior statue",
+    "tremendous statue",
+    "ancient statue",
+    "motherly statue",
+    "familiar statue",
+    "great statue",
+    "quaint painting",
+    "graceful painting",
+    "famous painting",
+    "detailed painting",
+    "basic painting",
+    "serene painting",
+    "amazing painting",
+    "solemn painting",
+    "scary painting",
+    "jolly painting",
+    "wistful painting",
+    "moving painting",
+    "wild painting left half",
+    "wild painting right half",
+    "scenic painting",
+    "academic painting",
+    "common painting",
+    "flowery painting",
+    "twinkling painting",
+    "nice painting",
+    "moody painting",
+    "glowing painting",
+    "perfect painting",
+    "mysterious painting",
+    "calm painting",
+    "proper painting",
+    "sinking painting",
+    "worthy painting",
+    "warm painting",
+    "dynamic painting",
 ];

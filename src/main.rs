@@ -8,6 +8,7 @@ mod fossils;
 mod fish;
 mod flowers;
 mod common;
+mod art;
 mod id;
 
 const IMAGE_DL_FOLDER: &str = "images";
@@ -31,10 +32,15 @@ fn main() {
     // let json_fossils = json::to_string_pretty(&fossils).unwrap();
     // fs::write("data/fossils.json", json_fossils).unwrap();
 
-    // ### Flowers ###
-    let flowers = flowers::fetch_all().expect("flowers");
-    let json_flowers = json::to_string_pretty(&flowers).unwrap();
-    fs::write("data/flowers.json", json_flowers).unwrap();
+    // // ### Flowers ###
+    // let flowers = flowers::fetch_all().expect("flowers");
+    // let json_flowers = json::to_string_pretty(&flowers).unwrap();
+    // fs::write("data/flowers.json", json_flowers).unwrap();
+
+    // ### Art ###
+    let art = art::fetch_all().expect("art");
+    let json_art = json::to_string_pretty(&art).unwrap();
+    fs::write("data/art.json", json_art).unwrap();
 
     // let old_fish_json = include_bytes!("../../../Downloads/ac_res/res/raw/fish.json");
     // let mut old_fishes: Vec<json::Value> = json::from_slice(old_fish_json).unwrap();
@@ -54,4 +60,5 @@ fn main() {
     // download_images(fish, IMAGE_DL_FOLDER).unwrap();
     // download_images(fossils, IMAGE_DL_FOLDER).unwrap();
     // download_images(flowers, IMAGE_DL_FOLDER).unwrap();
+    download_images(art, IMAGE_DL_FOLDER).unwrap();
 }
