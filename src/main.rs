@@ -67,5 +67,5 @@ fn main() {
     // download_images(fossils, IMAGE_DL_FOLDER).unwrap();
     // download_images(flowers, IMAGE_DL_FOLDER).unwrap();
     // download_images(art, IMAGE_DL_FOLDER).unwrap();
-    download_images(neighbours, IMAGE_DL_FOLDER).unwrap();
+    // download_images(neighbours, IMAGE_DL_FOLDER).unwrap();
 }

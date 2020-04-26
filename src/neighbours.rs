@@ -1,4 +1,3 @@
-
 use std::collections::BTreeMap;
 use select::{node::Node, predicate::*};
 use serde::*;
@@ -6,6 +5,7 @@ use failure::{Fallible};
 use itertools::Itertools;
 use crate::common::*;
 use crate::id;
+use rayon::prelude::*;
 
 #[derive(Debug, Serialize)]
 pub struct Neighbour {
@@ -16,6 +16,14 @@ pub struct Neighbour {
     pub image_url: Option<String>,
     pub is_new: bool,
     pub kind: String,
+    pub gender: Gender,
+    pub birthday: Option<[u8; 2]>,
+    #[serde(rename="phrase")]
+    pub phrases: BTreeMap<String, String>,
+    #[serde(rename="photo_phrase")]
+    pub photo_phrases: BTreeMap<String, String>,
+    #[serde(rename="personalities")]
+    pub personalities: BTreeMap<String, String>,
 }
 
 pub fn fetch_all() -> Fallible<Vec<Neighbour>> {
@@ -36,6 +44,9 @@ pub fn fetch_all() -> Fallible<Vec<Neighbour>> {
 
         all_neighbours.extend(neighbours)
     }
+
+    all_neighbours.par_iter_mut()
+        .try_for_each(enrich_with_extra_info)?;
 
     Ok(all_neighbours)
 }
@@ -110,12 +121,94 @@ fn parse_table(table: &Node, kind: &str) -> Fallible<Vec<Neighbour>> {
             image_url: img,
             is_new,
             kind: kind.to_owned(),
+            gender: Gender::Unknown,
+            birthday: None,
+            phrases: BTreeMap::new(),
+            photo_phrases: BTreeMap::new(),
+            personalities: BTreeMap::new(),
         };
 
         neighbours.push(neighbour);
     }
 
     Ok(neighbours)
+}
+
+fn enrich_with_extra_info(neighbour: &mut Neighbour) -> Fallible<()> {
+    let lowercase_name = neighbour.names["deu"].to_lowercase();
+    let url = format!("https://animalcrossingwiki.de/nachbarn/{}", lowercase_name);
+    println!("Fetching '{}'", url);
+    let page = download_page(&url)?;
+
+    // main data
+    {
+        let table = page.find(
+            Class("wrap_nachbarntabelle")
+                .descendant(Name("table"))
+            ).next().unwrap();
+        let rows = table.find(Name("tr")).skip(2);
+
+        for row in rows {
+            let cols = row.find(Name("th").or(Name("td"))).collect_vec();
+            let field = cols[0].text().trim().to_lowercase();
+            let value = cols[1].text().trim().to_owned();
+
+            match &*field {
+                "geschlecht" => match &*value.to_lowercase() {
+                    "weiblich" => neighbour.gender = Gender::Female,
+                    "männlich" => neighbour.gender = Gender::Male,
+                    gender => panic!("Unknown gender '{}'", gender),
+                },
+                "tierart" => {},
+                | "persönlichkeit"
+                | "persönlichkeit." => {
+                    neighbour.personalities.insert("deu".into(), value.trim().into());
+                },
+                "geburtstag" => {
+                    let parts = value.trim().split('.').map(str::trim).collect_vec();
+                    let day = parts[0].parse::<u8>().unwrap();
+                    let month = match parts[1] {
+                        "Januar" => 1,
+                        "Februar" => 2,
+                        "März" => 3,
+                        "April" => 4,
+                        "Mai" => 5,
+                        "Juni" => 6,
+                        "Juli" => 7,
+                        "August" => 8,
+                        "September" => 9,
+                        "Oktober" => 10,
+                        "November" => 11,
+                        "Dezember" => 12,
+                        month => panic!("unknown month '{}'", month),
+                    };
+                    neighbour.birthday = Some([day, month]);
+                },
+                "floskel" => {
+                    neighbour.phrases.insert("deu".into(), value.trim().into());
+                },
+                "fotospruch" => {
+                    neighbour.photo_phrases.insert("deu".into(), value.trim().into());
+                },
+                "auftreten" => {},
+                field => panic!("Unknown field '{}', value: '{}'", field, value),
+            }
+
+            // println!(">>> {:#?}", cols[0]);
+        }
+    } 
+
+    // println!("{:#?}", main_table);
+
+    Ok(())
+}
+
+#[derive(Debug, Serialize)]
+#[serde(rename_all="lowercase")]
+pub enum Gender {
+    Unknown,
+    Male,
+    Female,
 }
 
 impl HasFiles for Neighbour {
