@@ -15,7 +15,7 @@ pub struct Villager {
     #[serde(skip)]
     pub image_url: Option<String>,
     pub is_new: bool,
-    pub kind: String,
+    pub species: String,
     pub gender: Gender,
     pub birthday: Option<[u8; 2]>,
     #[serde(rename="phrase")]
@@ -120,7 +120,7 @@ fn parse_table(table: &Node, kind: &str) -> Fallible<Vec<Villager>> {
             names,
             image_url: img,
             is_new,
-            kind: kind.to_owned(),
+            species: kind.to_owned(),
             gender: Gender::Unknown,
             birthday: None,
             phrases: BTreeMap::new(),
