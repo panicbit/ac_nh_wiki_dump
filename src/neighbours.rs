@@ -20,8 +20,8 @@ pub struct Neighbour {
     pub birthday: Option<[u8; 2]>,
     #[serde(rename="phrase")]
     pub phrases: BTreeMap<String, String>,
-    #[serde(rename="photo_phrase")]
-    pub photo_phrases: BTreeMap<String, String>,
+    // #[serde(rename="photo_phrase")]
+    // pub photo_phrases: BTreeMap<String, String>,
     #[serde(rename="personalities")]
     pub personalities: BTreeMap<String, String>,
 }
@@ -124,7 +124,7 @@ fn parse_table(table: &Node, kind: &str) -> Fallible<Vec<Neighbour>> {
             gender: Gender::Unknown,
             birthday: None,
             phrases: BTreeMap::new(),
-            photo_phrases: BTreeMap::new(),
+            // photo_phrases: BTreeMap::new(),
             personalities: BTreeMap::new(),
         };
 
@@ -188,7 +188,7 @@ fn enrich_with_extra_info(neighbour: &mut Neighbour) -> Fallible<()> {
                     neighbour.phrases.insert("deu".into(), value.trim().into());
                 },
                 "fotospruch" => {
-                    neighbour.photo_phrases.insert("deu".into(), value.trim().into());
+                    // neighbour.photo_phrases.insert("deu".into(), value.trim().into());
                 },
                 "auftreten" => {},
                 field => panic!("Unknown field '{}', value: '{}'", field, value),
