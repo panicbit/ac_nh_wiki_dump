@@ -1,10 +1,11 @@
 use select::document::Document;
-use failure::Fallible;
+use failure::{Fallible, bail};
 use std::path::Path;
 use std::fs;
 use ::reqwest::blocking as reqwest;
 use regex::Regex;
-use image::ImageFormat;
+use image::{ImageFormat, imageops::FilterType};
+use threadpool::ThreadPool;
 
 pub fn parse_text(name: impl AsRef<str>) -> Option<String> {
     let name = name
@@ -91,20 +92,36 @@ pub fn download_page(url: &str) -> Fallible<Document> {
 }
 
 pub fn download_images<T: HasFiles>(items: impl IntoIterator<Item = T>, dir: impl AsRef<Path>) -> Fallible<()> {
+    let tasks = ThreadPool::new(4);
     let dir = dir.as_ref();
 
     fs::create_dir_all(dir)?;
 
     for item in items {
         for file in item.files() {
-            let path = dir.join(file.name);
+            if tasks.panic_count() > 0 {
+                bail!("Failed to download some files");
+            }
 
-            println!("Downloading '{}' to '{}'", file.url, path.display());
+            let dir = dir.to_owned();
 
-            let bytes = reqwest::get(&file.url)?.bytes()?;
+            tasks.execute(move || {
+                let path = dir.join(file.name);
 
-            fs::write(path, bytes)?;
+                println!("Downloading '{}' to '{}'", file.url, path.display());
+
+                let bytes = reqwest::get(&file.url).unwrap().bytes().unwrap().to_vec();
+                let bytes = (file.transform)(bytes);
+
+                fs::write(path, bytes).unwrap();
+            });
         }
+    }
+
+    tasks.join();
+
+    if tasks.panic_count() > 0 {
+        bail!("Failed to download some files");
     }
 
     Ok(())
@@ -135,9 +152,10 @@ impl<T: HasFiles> HasFiles for &'_ T {
 }
 
 pub fn convert_image_to_png(source: Vec<u8>) -> Vec<u8> {
-    let source = image::load_from_memory(&source).unwrap();
-    let mut target = Vec::new();
+    let source = image::load_from_memory(&source).unwrap()
+        .resize(512, 512, FilterType::Lanczos3);
 
+    let mut target = Vec::new();
     source.write_to(&mut target, ImageFormat::Png).unwrap();
 
     target
