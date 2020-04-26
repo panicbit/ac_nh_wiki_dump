@@ -8,7 +8,7 @@ use crate::id;
 use rayon::prelude::*;
 
 #[derive(Debug, Serialize)]
-pub struct Neighbour {
+pub struct Villager {
     pub id: usize,
     #[serde(rename="name")]
     pub names: BTreeMap<String, String>,
@@ -26,35 +26,35 @@ pub struct Neighbour {
     pub personalities: BTreeMap<String, String>,
 }
 
-pub fn fetch_all() -> Fallible<Vec<Neighbour>> {
+pub fn fetch_all() -> Fallible<Vec<Villager>> {
     let page = download_page("https://animalcrossingwiki.de/acnh/nachbarn")?;
 
-    let neighbour_nodes = page.find(
+    let villager_nodes = page.find(
         Name("h2")
         .or(Name("table").and(Class("inline")))
     );
 
-    let mut all_neighbours = Vec::new();
+    let mut all_villagers = Vec::new();
 
-    for (kind, table) in neighbour_nodes.tuples() {
+    for (kind, table) in villager_nodes.tuples() {
         let kind = kind.text();
         let kind = kind.trim();
 
-        let neighbours = parse_table(&table, kind)?;
+        let villagers = parse_table(&table, kind)?;
 
-        all_neighbours.extend(neighbours)
+        all_villagers.extend(villagers)
     }
 
-    all_neighbours.par_iter_mut()
+    all_villagers.par_iter_mut()
         .try_for_each(enrich_with_extra_info)?;
 
-    Ok(all_neighbours)
+    Ok(all_villagers)
 }
 
-fn parse_table(table: &Node, kind: &str) -> Fallible<Vec<Neighbour>> {
+fn parse_table(table: &Node, kind: &str) -> Fallible<Vec<Villager>> {
     let rows = table.find(Name("tr"));
 
-    let mut neighbours = Vec::new();
+    let mut villagers = Vec::new();
 
     for row in rows {
         if row.find(Name("th")).count() > 0 {
@@ -108,14 +108,14 @@ fn parse_table(table: &Node, kind: &str) -> Fallible<Vec<Neighbour>> {
             )
             .unwrap_or(false);
 
-        let id = id::neighbour(&english_name);
+        let id = id::villager(&english_name);
 
         let names = btreemap!{
             "eng".into() => english_name,
             "deu".into() => german_name,
         };
 
-        let neighbour = Neighbour {
+        let villager = Villager {
             id,
             names,
             image_url: img,
@@ -128,14 +128,14 @@ fn parse_table(table: &Node, kind: &str) -> Fallible<Vec<Neighbour>> {
             personalities: BTreeMap::new(),
         };
 
-        neighbours.push(neighbour);
+        villagers.push(villager);
     }
 
-    Ok(neighbours)
+    Ok(villagers)
 }
 
-fn enrich_with_extra_info(neighbour: &mut Neighbour) -> Fallible<()> {
-    let lowercase_name = neighbour.names["deu"].to_lowercase();
+fn enrich_with_extra_info(villager: &mut Villager) -> Fallible<()> {
+    let lowercase_name = villager.names["deu"].to_lowercase();
     let url = format!("https://animalcrossingwiki.de/nachbarn/{}", lowercase_name);
     println!("Fetching '{}'", url);
     let page = download_page(&url)?;
@@ -155,14 +155,14 @@ fn enrich_with_extra_info(neighbour: &mut Neighbour) -> Fallible<()> {
 
             match &*field {
                 "geschlecht" => match &*value.to_lowercase() {
-                    "weiblich" => neighbour.gender = Gender::Female,
-                    "männlich" => neighbour.gender = Gender::Male,
+                    "weiblich" => villager.gender = Gender::Female,
+                    "männlich" => villager.gender = Gender::Male,
                     gender => panic!("Unknown gender '{}'", gender),
                 },
                 "tierart" => {},
                 | "persönlichkeit"
                 | "persönlichkeit." => {
-                    neighbour.personalities.insert("deu".into(), value.trim().into());
+                    villager.personalities.insert("deu".into(), value.trim().into());
                 },
                 "geburtstag" => {
                     let parts = value.trim().split('.').map(str::trim).collect_vec();
@@ -182,13 +182,13 @@ fn enrich_with_extra_info(neighbour: &mut Neighbour) -> Fallible<()> {
                         "Dezember" => 12,
                         month => panic!("unknown month '{}'", month),
                     };
-                    neighbour.birthday = Some([day, month]);
+                    villager.birthday = Some([day, month]);
                 },
                 "floskel" => {
-                    neighbour.phrases.insert("deu".into(), value.trim().into());
+                    villager.phrases.insert("deu".into(), value.trim().into());
                 },
                 "fotospruch" => {
-                    // neighbour.photo_phrases.insert("deu".into(), value.trim().into());
+                    // villager.photo_phrases.insert("deu".into(), value.trim().into());
                 },
                 "auftreten" => {},
                 field => panic!("Unknown field '{}', value: '{}'", field, value),
@@ -211,20 +211,20 @@ pub enum Gender {
     Female,
 }
 
-impl HasFiles for Neighbour {
+impl HasFiles for Villager {
     fn files(&self) -> Vec<File> {
         let mut files = vec![];
 
         if let Some(image_url) = &self.image_url {
             files.push(File {
-                name: format!("nb{}.png", self.id),
+                name: format!("vi{}.png", self.id),
                 url: image_url.clone(),
                 transform: convert_image_to_png,
             })
         }
 
         files.push(File {
-            name: format!("nb{}_hi.png", self.id),
+            name: format!("vi{}_hi.png", self.id),
             url: format!("https://villagerdb.com/images/villagers/full/{}.png", self.names["eng"].to_lowercase()),
             transform: convert_image_to_png,
         });

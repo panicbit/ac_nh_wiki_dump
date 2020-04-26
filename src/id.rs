@@ -44,12 +44,12 @@ pub fn art(name: impl AsRef<str>) -> usize {
     }
 }
 
-pub fn neighbour(name: impl AsRef<str>) -> usize {
+pub fn villager(name: impl AsRef<str>) -> usize {
     let name = name.as_ref().to_lowercase();
 
-    match NEIGHBOURS.iter().position(|&other| other == name) {
+    match VILLAGERS.iter().position(|&other| other == name) {
         Some(index) => index,
-        _ => panic!("neighbour '{}' has no id yet", name),
+        _ => panic!("villager '{}' has no id yet", name),
     }
 }
 
@@ -398,7 +398,7 @@ const ART: &[&str] = &[
     "dynamic painting",
 ];
 
-const NEIGHBOURS: &[&str] = &[
+const VILLAGERS: &[&str] = &[
     "amelia",
     "pierce",
     "apollo",
