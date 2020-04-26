@@ -1,0 +1,3 @@
+[submodule "villagerdb"]
+	path = villagerdb
+	url = https://github.com/jefflomacy/villagerdb
