@@ -10,6 +10,7 @@ mod flowers;
 mod common;
 mod art;
 mod villagers;
+mod villagerdb;
 mod id;
 
 const IMAGE_DL_FOLDER: &str = "images";

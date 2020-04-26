@@ -6,6 +6,7 @@ use itertools::Itertools;
 use crate::common::*;
 use crate::id;
 use rayon::prelude::*;
+use crate::villagerdb;
 
 #[derive(Debug, Serialize)]
 pub struct Villager {
@@ -45,6 +46,18 @@ pub fn fetch_all() -> Fallible<Vec<Villager>> {
         all_villagers.extend(villagers)
     }
 
+    for villager in &mut all_villagers {
+        let name = &villager.names["eng"];
+        println!("Querying villagedb about villager '{}'", name);
+        let db_villager = villagerdb::get_villager(name)?;
+
+        assert_eq!(villager.names["eng"], db_villager.name);
+
+        villager.species = db_villager.species;
+        villager.phrases.insert("eng".into(), db_villager.games.nh.phrase);
+        villager.personalities.insert("eng".into(), db_villager.games.nh.personality);
+    }
+
     all_villagers.par_iter_mut()
         .try_for_each(enrich_with_extra_info)?;
 
@@ -81,7 +94,7 @@ fn parse_table(table: &Node, kind: &str) -> Fallible<Vec<Villager>> {
                 .map(|name| name.trim().to_owned())
                 .collect_vec()
             );
-        let (mut german_name, english_name);
+        let (mut german_name, mut english_name);
 
         match names {
             Some(names) if names.len() == 2 => {
@@ -90,6 +103,16 @@ fn parse_table(table: &Node, kind: &str) -> Fallible<Vec<Villager>> {
             },
             _ => continue,
         }
+
+        // Fix some english names
+        english_name = match &*english_name {
+            "Marrcel" => "Marcel".into(),
+            "Sidney" => "Sydney".into(),
+            "Gretel" => "Greta".into(),
+            "Candy" => "Candi".into(),
+            "Stiches" => "Stitches".into(),
+            _ => english_name,
+        };
 
         // Fix some missing names
         german_name = match &*english_name {
@@ -185,7 +208,12 @@ fn enrich_with_extra_info(villager: &mut Villager) -> Fallible<()> {
                     villager.birthday = Some([day, month]);
                 },
                 "floskel" => {
-                    villager.phrases.insert("deu".into(), value.trim().into());
+                    let phrase = value
+                        .trim()
+                        .replace('„', "")
+                        .replace('“', "")
+                        .replace('"', "");
+                    villager.phrases.insert("deu".into(), phrase);
                 },
                 "fotospruch" => {
                     // villager.photo_phrases.insert("deu".into(), value.trim().into());
