@@ -11,10 +11,11 @@ pub struct Art {
     pub id: usize,
     #[serde(rename="name")]
     pub names: BTreeMap<String, String>,
-    pub fake_exists: bool,
     pub kind: &'static str,
+    pub fake_exists: bool,
     #[serde(skip)]
     pub fake_image_url: Option<String>,
+    pub fake_description: BTreeMap<String, String>,
     #[serde(skip)]
     pub image_url: Option<String>,
 }
@@ -79,6 +80,17 @@ fn parse_table(table: &Node) -> Fallible<Vec<Art>> {
             img
         };
 
+        let mut fake_description = BTreeMap::new();
+
+        if fake_exists {
+            let description = cols.get(4)
+                .map(|text| text.text().trim().to_string());
+            
+            if let Some(description) = description {
+                fake_description.insert("deu".into(), description);
+            }
+        };
+
         let names = cols.get(name_index)
             .map(|name| name
                 .text()
@@ -118,6 +130,7 @@ fn parse_table(table: &Node) -> Fallible<Vec<Art>> {
             id,
             names,
             fake_exists,
+            fake_description,
             kind,
             fake_image_url: fake_img,
             image_url: img,

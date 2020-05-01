@@ -40,14 +40,14 @@ fn main() {
     // fs::write("data/flowers.json", json_flowers).unwrap();
 
     // ### Art ###
-    // let art = art::fetch_all().expect("art");
-    // let json_art = json::to_string_pretty(&art).unwrap();
-    // fs::write("data/art.json", json_art).unwrap();
+    let art = art::fetch_all().expect("art");
+    let json_art = json::to_string_pretty(&art).unwrap();
+    fs::write("data/art.json", json_art).unwrap();
 
     // ### Villagers ###
-    let villagers = villagers::fetch_all().expect("villagers");
-    let json_villagers = json::to_string_pretty(&villagers).unwrap();
-    fs::write("data/villagers.json", json_villagers).unwrap();
+    // let villagers = villagers::fetch_all().expect("villagers");
+    // let json_villagers = json::to_string_pretty(&villagers).unwrap();
+    // fs::write("data/villagers.json", json_villagers).unwrap();
 
     // let old_fish_json = include_bytes!("../../../Downloads/ac_res/res/raw/fish.json");
     // let mut old_fishes: Vec<json::Value> = json::from_slice(old_fish_json).unwrap();
