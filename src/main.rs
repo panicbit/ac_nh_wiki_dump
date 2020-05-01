@@ -19,10 +19,10 @@ const DATA_FOLDER: &str = "data";
 fn main() {
     fs::create_dir_all(DATA_FOLDER).unwrap();
 
-    // // ### Bugs ###
-    // let bugs = bugs::fetch_all().expect("bugs");
-    // let json_bugs = json::to_string_pretty(&bugs).unwrap();
-    // fs::write("data/insects.json", json_bugs).unwrap();
+    // ### Bugs ###
+    let bugs = bugs::fetch_all().expect("bugs");
+    let json_bugs = json::to_string_pretty(&bugs).unwrap();
+    fs::write("data/insects.json", json_bugs).unwrap();
 
     // // ### Fish ###
     // let fishes = fish::fetch_all().expect("fish");
@@ -40,9 +40,9 @@ fn main() {
     // fs::write("data/flowers.json", json_flowers).unwrap();
 
     // ### Art ###
-    let art = art::fetch_all().expect("art");
-    let json_art = json::to_string_pretty(&art).unwrap();
-    fs::write("data/art.json", json_art).unwrap();
+    // let art = art::fetch_all().expect("art");
+    // let json_art = json::to_string_pretty(&art).unwrap();
+    // fs::write("data/art.json", json_art).unwrap();
 
     // ### Villagers ###
     // let villagers = villagers::fetch_all().expect("villagers");

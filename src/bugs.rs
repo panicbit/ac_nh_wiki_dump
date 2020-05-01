@@ -31,10 +31,10 @@ pub fn fetch_all() -> Fallible<Vec<Bug>> {
     let extra_info = fetch_extra_info()?;
 
     for bug in &mut bugs {
-        let name = bug.names["eng"].to_lowercase();
+        let name = bug.names["en"].to_lowercase();
 
         if let Some(extra_info) = extra_info.get(&name) {
-            bug.names.insert("deu".into(), extra_info.german_name.clone());
+            bug.names.insert("de".into(), extra_info.german_name.clone());
             bug.hi_res_image_url = extra_info.hi_res_image_url.clone();
         }
     }
@@ -67,8 +67,8 @@ fn parse_bugs(page: Document) -> Fallible<Vec<Bug>> {
             .unwrap_or_else(|| "???".into())
             .to_owned();
 
-        names.insert("eng".into(), english_name);
-        names.insert("deu".into(), "TBD".into());
+        names.insert("en".into(), english_name);
+        names.insert("de".into(), "TBD".into());
 
         let image_url = north_cols.get(1)
             .and_then(|img| img
@@ -110,7 +110,7 @@ fn parse_bugs(page: Document) -> Fallible<Vec<Bug>> {
         south_months.resize(12, false);
 
         let bug = Bug {
-            id: id::bug(&names["eng"]),
+            id: id::bug(&names["en"]),
             image_url,
             names,
             price,
