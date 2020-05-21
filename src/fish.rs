@@ -39,10 +39,10 @@ pub fn fetch_all() -> Fallible<Vec<Fish>> {
     let extra_info = fetch_extra_info()?;
 
     for fish in &mut fish {
-        let name = fish.names["eng"].to_lowercase();
+        let name = fish.names["en"].to_lowercase();
 
         if let Some(extra_info) = extra_info.get(&name) {
-            fish.names.insert("deu".into(), extra_info.german_name.clone());
+            fish.names.insert("de".into(), extra_info.german_name.clone());
             fish.hi_res_image_url = extra_info.hi_res_image_url.clone();
         }
     }
@@ -74,8 +74,8 @@ fn parse_fish(page: Document) -> Fallible<Vec<Fish>> {
             .unwrap_or_else(|| "???".into())
             .to_owned();
 
-        names.insert("eng".into(), english_name);
-        names.insert("deu".into(), "TBD".into());
+        names.insert("en".into(), english_name);
+        names.insert("de".into(), "TBD".into());
 
         let image_url = north_cols.get(1)
             .and_then(|img| img
@@ -125,7 +125,7 @@ fn parse_fish(page: Document) -> Fallible<Vec<Fish>> {
         south_months.resize(12, false);
 
         let fish = Fish {
-            id: id::fish(&names["eng"]),
+            id: id::fish(&names["en"]),
             image_url,
             names,
             price,

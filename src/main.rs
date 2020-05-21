@@ -20,14 +20,14 @@ fn main() {
     fs::create_dir_all(DATA_FOLDER).unwrap();
 
     // ### Bugs ###
-    let bugs = bugs::fetch_all().expect("bugs");
-    let json_bugs = json::to_string_pretty(&bugs).unwrap();
-    fs::write("data/insects.json", json_bugs).unwrap();
+    // let bugs = bugs::fetch_all().expect("bugs");
+    // let json_bugs = json::to_string_pretty(&bugs).unwrap();
+    // fs::write("data/insects.json", json_bugs).unwrap();
 
     // // ### Fish ###
-    // let fishes = fish::fetch_all().expect("fish");
-    // let json_fishes = json::to_string_pretty(&fishes).unwrap();
-    // fs::write("data/fish.json", json_fishes).unwrap();
+    let fishes = fish::fetch_all().expect("fish");
+    let json_fishes = json::to_string_pretty(&fishes).unwrap();
+    fs::write("data/fish.json", json_fishes).unwrap();
 
     // // ### Fossils ###
     // let fossils = fossils::fetch_all().expect("fossils");
