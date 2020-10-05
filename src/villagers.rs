@@ -1,4 +1,5 @@
 use std::collections::BTreeMap;
+use maplit::btreemap;
 use select::{node::Node, predicate::*};
 use serde::*;
 use failure::{Fallible};
@@ -242,19 +243,26 @@ pub enum Gender {
 impl HasFiles for Villager {
     fn files(&self) -> Vec<File> {
         let mut files = vec![];
-        let name = villagerdb::get_villager_db_name(&self.names["eng"]);
+        let name = self.names["eng"].to_lowercase();
+        let villagerdb_name = villagerdb::get_villager_db_name(&name);
+        let overrides = btreemap! {
+            "audie" => "https://animalcrossingwiki.de/_media/nachbarn/katharina/katharina_acnh.png",
+            "megan" => "https://animalcrossingwiki.de/_media/nachbarn/dagmar/dagmar_nh.png,"
+        };
 
-        // if let Some(image_url) = &self.image_url {
-        //     files.push(File {
-        //         name: format!("wiki/{}.png", name),
-        //         url: image_url.clone(),
-        //         transform: convert_image_to_png,
-        //     })
-        // }
+        if let Some(image_url) = overrides.get(&*name) {
+            files.push(File {
+                name: format!("villagerdb/{}.png", name),
+                url: image_url.to_string(),
+                transform: convert_image_to_png,
+            });
+
+            return files;
+        }
 
         files.push(File {
             name: format!("villagerdb/{}.png", name),
-            url: format!("https://villagerdb.com/images/villagers/full/{}.png", name),
+            url: format!("https://villagerdb.com/images/villagers/full/{}.png", villagerdb_name),
             transform: convert_image_to_png,
         });
 
