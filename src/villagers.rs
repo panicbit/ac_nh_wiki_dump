@@ -242,18 +242,19 @@ pub enum Gender {
 impl HasFiles for Villager {
     fn files(&self) -> Vec<File> {
         let mut files = vec![];
+        let name = villagerdb::get_villager_db_name(&self.names["eng"]);
 
-        if let Some(image_url) = &self.image_url {
-            files.push(File {
-                name: format!("vi{}.png", self.id),
-                url: image_url.clone(),
-                transform: convert_image_to_png,
-            })
-        }
+        // if let Some(image_url) = &self.image_url {
+        //     files.push(File {
+        //         name: format!("wiki/{}.png", name),
+        //         url: image_url.clone(),
+        //         transform: convert_image_to_png,
+        //     })
+        // }
 
         files.push(File {
-            name: format!("vi{}_hi.png", self.id),
-            url: format!("https://villagerdb.com/images/villagers/full/{}.png", self.names["eng"].to_lowercase()),
+            name: format!("villagerdb/{}.png", name),
+            url: format!("https://villagerdb.com/images/villagers/full/{}.png", name),
             transform: convert_image_to_png,
         });
 

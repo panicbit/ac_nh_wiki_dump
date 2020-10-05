@@ -4,7 +4,7 @@ use std::path::Path;
 use std::fs;
 use ::reqwest::blocking as reqwest;
 use regex::Regex;
-use image::{ImageFormat, imageops::FilterType};
+use image::{GenericImageView, ImageFormat, imageops::FilterType};
 use threadpool::ThreadPool;
 
 pub fn parse_text(name: impl AsRef<str>) -> Option<String> {
@@ -108,9 +108,17 @@ pub fn download_images<T: HasFiles>(items: impl IntoIterator<Item = T>, dir: imp
             tasks.execute(move || {
                 let path = dir.join(file.name);
 
+                if path.exists() {
+                    // println!("Already cached: '{}' to '{}'", file.url, path.display());
+                    return;
+                }
+
                 println!("Downloading '{}' to '{}'", file.url, path.display());
 
-                let bytes = reqwest::get(&file.url).unwrap().bytes().unwrap().to_vec();
+                let bytes = reqwest::get(&file.url).unwrap()
+                    .error_for_status().unwrap()
+                    .bytes().unwrap()
+                    .to_vec();
                 let bytes = (file.transform)(bytes);
 
                 fs::write(path, bytes).unwrap();
@@ -152,8 +160,14 @@ impl<T: HasFiles> HasFiles for &'_ T {
 }
 
 pub fn convert_image_to_png(source: Vec<u8>) -> Vec<u8> {
-    let source = image::load_from_memory(&source).unwrap()
-        .resize(512, 512, FilterType::Lanczos3);
+    let mut source = image::load_from_memory(&source).unwrap();
+    let target_width = 256;
+    let target_height = 256;
+    let target_dimensions = (target_width, target_height);
+
+    if source.dimensions() != target_dimensions {
+        source = source.resize(target_width, target_height, FilterType::Lanczos3);
+    }
 
     let mut target = Vec::new();
     source.write_to(&mut target, ImageFormat::Png).unwrap();

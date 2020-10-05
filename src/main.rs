@@ -25,9 +25,9 @@ fn main() {
     // fs::write("data/insects.json", json_bugs).unwrap();
 
     // // ### Fish ###
-    let fishes = fish::fetch_all().expect("fish");
-    let json_fishes = json::to_string_pretty(&fishes).unwrap();
-    fs::write("data/fish.json", json_fishes).unwrap();
+    // let fishes = fish::fetch_all().expect("fish");
+    // let json_fishes = json::to_string_pretty(&fishes).unwrap();
+    // fs::write("data/fish.json", json_fishes).unwrap();
 
     // // ### Fossils ###
     // let fossils = fossils::fetch_all().expect("fossils");
@@ -45,9 +45,9 @@ fn main() {
     // fs::write("data/art.json", json_art).unwrap();
 
     // ### Villagers ###
-    // let villagers = villagers::fetch_all().expect("villagers");
-    // let json_villagers = json::to_string_pretty(&villagers).unwrap();
-    // fs::write("data/villagers.json", json_villagers).unwrap();
+    let villagers = villagers::fetch_all().expect("villagers");
+    let json_villagers = json::to_string_pretty(&villagers).unwrap();
+    fs::write("data/villagers.json", json_villagers).unwrap();
 
     // let old_fish_json = include_bytes!("../../../Downloads/ac_res/res/raw/fish.json");
     // let mut old_fishes: Vec<json::Value> = json::from_slice(old_fish_json).unwrap();
@@ -68,5 +68,5 @@ fn main() {
     // download_images(fossils, IMAGE_DL_FOLDER).unwrap();
     // download_images(flowers, IMAGE_DL_FOLDER).unwrap();
     // download_images(art, IMAGE_DL_FOLDER).unwrap();
-    // download_images(villagers, IMAGE_DL_FOLDER).unwrap();
+    download_images(villagers, IMAGE_DL_FOLDER).unwrap();
 }
